@@ -27,6 +27,7 @@ export function EncounterPage({ onSettingsOpen }) {
   const { user, logout } = useAuth();
 
   const [session, setSession] = useState(null);
+  const [editName, setEditName] = useState('');
   const [combatants, setCombatants] = useState([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -44,6 +45,7 @@ export function EncounterPage({ onSettingsOpen }) {
       .then((r) => r.json())
       .then((data) => {
         setSession(data);
+        setEditName(data.name);
         const initialCombatants = (data.players || []).map((p) => ({
           ...p,
           initiative: 0,
@@ -98,6 +100,28 @@ export function EncounterPage({ onSettingsOpen }) {
   };
 
   const [focusId, setFocusId] = useState(null);
+
+  const saveSessionName = async (name) => {
+    const trimmed = name.trim();
+    if (!trimmed || trimmed === session?.name) {
+      setEditName(session?.name ?? '');
+      return;
+    }
+    setSaving(true);
+    try {
+      const res = await fetch(`/api/sessions/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ name: trimmed }),
+      });
+      const data = await res.json();
+      setSession(data);
+      setEditName(data.name);
+    } finally {
+      setSaving(false);
+    }
+  };
 
   const addCombatant = (type) => {
     const c = { id: newId(), name: type === 'npc' ? 'NPC' : 'Player', type, initiative: 0, modifier: 0, flatFooted: false };
@@ -171,7 +195,30 @@ export function EncounterPage({ onSettingsOpen }) {
               title="All sessions"
             >←</button>
             <span className="font-semibold text-base" style={{ color: 'var(--color-header-text)' }}>
-              {session?.name ?? 'Encounter'}
+              <input
+                type="text"
+                value={editName}
+                onChange={(e) => setEditName(e.target.value)}
+                onFocus={(e) => e.target.select()}
+                onBlur={(e) => saveSessionName(e.target.value)}
+                onKeyDown={(e) => { if (e.key === 'Enter') e.target.blur(); if (e.key === 'Escape') { setEditName(session?.name ?? ''); e.target.blur(); } }}
+                style={{
+                  background: 'transparent',
+                  border: '1px solid transparent',
+                  borderRadius: '4px',
+                  color: 'var(--color-header-text)',
+                  fontWeight: 600,
+                  fontSize: '14px',
+                  padding: '2px 6px',
+                  outline: 'none',
+                  width: '240px',
+                  transition: 'border-color 0.15s',
+                }}
+                onMouseEnter={(e) => { if (document.activeElement !== e.target) e.target.style.borderColor = 'var(--color-header-border)'; }}
+                onMouseLeave={(e) => { if (document.activeElement !== e.target) e.target.style.borderColor = 'transparent'; }}
+                onFocusCapture={(e) => { e.target.style.borderColor = 'var(--color-accent-fg)'; }}
+                onBlurCapture={(e) => { e.target.style.borderColor = 'transparent'; }}
+              />
             </span>
             {saving && <span style={{ fontSize: '12px', color: 'var(--color-header-muted)' }}>Saving…</span>}
           </div>
@@ -186,7 +233,7 @@ export function EncounterPage({ onSettingsOpen }) {
           style={{
             backgroundColor: 'var(--color-canvas-default)',
             border: '1px solid var(--color-border-default)',
-            boxShadow: 'var(--color-shadow-medium)',
+            boxShadow: 'none',
           }}
         >
           <div className="flex items-center gap-6">

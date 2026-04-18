@@ -54,7 +54,7 @@ export function CombatantCard({ combatant, isActiveRound, onUpdate, onDelete, au
           : 'var(--color-canvas-default)',
         border: `1px solid ${isActiveRound ? 'var(--color-success-fg)' : 'var(--color-border-default)'}`,
         borderRadius: '8px',
-        boxShadow: isDragging ? 'var(--color-shadow-large)' : 'var(--color-shadow-medium)',
+        boxShadow: 'none',
         padding: '12px 16px',
         display: 'flex',
         alignItems: 'center',

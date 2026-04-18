@@ -50,6 +50,21 @@ export function SessionsPage({ onSettingsOpen }) {
     setSessions((prev) => prev.filter((s) => s.id !== id));
   };
 
+  const renameSession = async (id, name) => {
+    const trimmed = name.trim();
+    if (!trimmed) return;
+    const res = await fetch(`/api/sessions/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ name: trimmed }),
+    });
+    if (res.ok) {
+      const data = await res.json();
+      setSessions((prev) => prev.map((s) => s.id === id ? { ...s, name: data.name } : s));
+    }
+  };
+
   const atLimit = sessions.length >= MAX_SESSIONS;
 
   return (
@@ -123,17 +138,40 @@ export function SessionsPage({ onSettingsOpen }) {
             {sessions.map((s, i) => (
               <li
                 key={s.id}
-                className="flex items-center justify-between px-4 py-3 rounded-lg cursor-pointer"
+                className="flex items-center justify-between px-4 py-3 rounded-lg"
                 style={{
                   backgroundColor: 'var(--color-canvas-default)',
                   border: `1px solid ${i === 0 ? 'var(--color-accent-fg)' : 'var(--color-border-default)'}`,
                   boxShadow: 'var(--color-shadow-medium)',
                 }}
-                onClick={() => navigate(`/encounter/${s.id}`)}
               >
-                <div>
+                <div className="flex-1 min-w-0 cursor-pointer" onClick={() => navigate(`/encounter/${s.id}`)}>
                   <div className="flex items-center gap-2">
-                    <p className="font-medium text-sm" style={{ color: 'var(--color-fg-default)' }}>{s.name}</p>
+                    <input
+                      type="text"
+                      defaultValue={s.name}
+                      onFocus={(e) => { e.target.select(); e.target.style.borderColor = 'var(--color-accent-fg)'; }}
+                      onBlur={(e) => { e.target.style.borderColor = 'transparent'; renameSession(s.id, e.target.value); }}
+                      onKeyDown={(e) => { if (e.key === 'Enter') e.target.blur(); if (e.key === 'Escape') { e.target.value = s.name; e.target.blur(); } e.stopPropagation(); }}
+                      onClick={(e) => e.stopPropagation()}
+                      style={{
+                        fontWeight: 500,
+                        fontSize: '14px',
+                        color: 'var(--color-fg-default)',
+                        background: 'transparent',
+                        border: '1px solid transparent',
+                        borderRadius: '4px',
+                        padding: '1px 4px',
+                        outline: 'none',
+                        width: '240px',
+                        transition: 'border-color 0.15s',
+                      }}
+                    />
+                  </div>
+                  <div className="flex items-center gap-2 mt-0.5">
+                    <p className="text-xs" style={{ color: 'var(--color-fg-muted)' }}>
+                      {s.players?.length ?? 0} players saved
+                    </p>
                     {i === 0 && (
                       <span style={{
                         fontSize: '10px',
@@ -147,9 +185,6 @@ export function SessionsPage({ onSettingsOpen }) {
                       }}>RECENT</span>
                     )}
                   </div>
-                  <p className="text-xs mt-0.5" style={{ color: 'var(--color-fg-muted)' }}>
-                    {s.players?.length ?? 0} players saved
-                  </p>
                 </div>
                 <button
                   onClick={(e) => { e.stopPropagation(); deleteSession(s.id); }}
