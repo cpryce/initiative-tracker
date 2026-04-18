@@ -11,34 +11,71 @@ Initiative Tracker is a web-based utility designed to help Dungeon Masters (DMs)
 ## Getting Started
 
 ### Prerequisites
-- Node.js (v14 or higher recommended)
-- npm or yarn
+- Node.js v18 or higher
+- npm
+- A Google Cloud project with OAuth 2.0 credentials ([create one here](https://console.cloud.google.com/apis/credentials))
 
 ### Installation
+
 1. Clone the repository:
    ```bash
-   git clone <repository-url>
-   ```
-2. Install dependencies:
-   ```bash
-   npm install
-   # or
-   yarn install
+   git clone git@github.com:cpryce/initiative-tracker.git
+   cd initiative-tracker
    ```
 
-### Running the App
+2. Install all dependencies:
+   ```bash
+   npm run install:all
+   ```
+
+3. Configure the server environment:
+   ```bash
+   cp server/.env.example server/.env
+   ```
+   Edit `server/.env` and fill in your values:
+   ```
+   SESSION_SECRET=<a long random string>
+   GOOGLE_CLIENT_ID=<your Google OAuth client ID>
+   GOOGLE_CLIENT_SECRET=<your Google OAuth client secret>
+   ```
+
+   In the Google Cloud Console, add the following as an **Authorized redirect URI**:
+   ```
+   http://localhost:3001/auth/google/callback
+   ```
+
+### Running in Development
+
+Start the Express server (port 3001):
 ```bash
-npm start
-# or
-yarn start
+cd server && npm run dev
 ```
 
-The app will be available at `http://localhost:3000` by default.
+In a second terminal, start the Vite dev server (port 5173):
+```bash
+cd client && npm run dev
+```
+
+Open **http://localhost:5173** in your browser and sign in with Google.
+
+### Building for Production
+
+```bash
+cd client && npm run build
+```
+
+The compiled assets are output to `client/dist/`. Configure your Express server to serve that directory for production deployments.
 
 ## Usage
-- Add each player and NPC with their initiative roll and modifier.
-- The tracker will automatically sort and display the order.
-- Update initiative as needed for new rounds or changes.
+- Sign in with Google to access your encounter sessions.
+- Create a named session for each combat encounter.
+- Add **Players (PC)** and **NPCs** to the encounter.
+- Enter each combatant's d20 initiative roll and DEX modifier — the total is calculated automatically.
+- Click **Auto-Sort** to order combatants by initiative total (highest first), with ties broken by modifier per D&D 3.5 rules.
+- Drag and drop cards to manually reorder the initiative list.
+- Use **Next Turn** / **Prev** to advance through the initiative order.
+- Toggle the **FF** badge on a combatant to mark them as flat-footed.
+- The round counter increments automatically when all combatants have taken their turn.
 
 ## Contributing
 Pull requests are welcome! For major changes, please open an issue first to discuss what you would like to change.
