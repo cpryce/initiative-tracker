@@ -1,4 +1,14 @@
 require('dotenv').config();
+
+// Suppress known DEP0169 url.parse() warning from passport-google-oauth20 dependency chain
+const originalEmit = process.emit.bind(process);
+process.emit = function (event, warning, ...args) {
+  if (event === 'warning' && warning?.name === 'DeprecationWarning' && warning?.code === 'DEP0169') {
+    return false;
+  }
+  return originalEmit(event, warning, ...args);
+};
+
 const express = require('express');
 const cors = require('cors');
 const session = require('express-session');

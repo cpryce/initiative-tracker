@@ -96,16 +96,23 @@ export function CombatantCard({ combatant, isActiveRound, onUpdate, onDelete }) 
         type="text"
         value={combatant.name}
         onChange={(e) => onUpdate({ ...combatant, name: e.target.value })}
+        onPointerDown={(e) => e.stopPropagation()}
         style={{
           flex: 1,
-          border: 'none',
+          border: '1px solid transparent',
+          borderRadius: '4px',
           outline: 'none',
           backgroundColor: 'transparent',
           fontSize: '14px',
           fontWeight: 500,
           color: 'var(--color-fg-default)',
           minWidth: 0,
+          padding: '2px 4px',
+          cursor: 'text',
+          transition: 'border-color 0.15s',
         }}
+        onFocus={(e) => e.target.style.borderColor = 'var(--color-accent-fg)'}
+        onBlur={(e) => e.target.style.borderColor = 'transparent'}
         placeholder="Name"
       />
 
