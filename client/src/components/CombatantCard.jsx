@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 
@@ -11,7 +12,12 @@ import { CSS } from '@dnd-kit/utilities';
  * - Ties resolved by highest modifier; further ties re-roll (handled by user)
  * - Flat-footed before first action
  */
-export function CombatantCard({ combatant, isActiveRound, onUpdate, onDelete }) {
+export function CombatantCard({ combatant, isActiveRound, onUpdate, onDelete, autoFocus }) {
+  const nameRef = useRef(null);
+
+  useEffect(() => {
+    if (autoFocus) nameRef.current?.focus();
+  }, [autoFocus]);
   const {
     attributes,
     listeners,
@@ -93,6 +99,7 @@ export function CombatantCard({ combatant, isActiveRound, onUpdate, onDelete }) 
 
       {/* Name */}
       <input
+        ref={nameRef}
         type="text"
         value={combatant.name}
         onChange={(e) => onUpdate({ ...combatant, name: e.target.value })}
@@ -111,7 +118,7 @@ export function CombatantCard({ combatant, isActiveRound, onUpdate, onDelete }) 
           cursor: 'text',
           transition: 'border-color 0.15s',
         }}
-        onFocus={(e) => e.target.style.borderColor = 'var(--color-accent-fg)'}
+        onFocus={(e) => { e.target.style.borderColor = 'var(--color-accent-fg)'; e.target.select(); }}
         onBlur={(e) => e.target.style.borderColor = 'transparent'}
         placeholder="Name"
       />
@@ -124,7 +131,10 @@ export function CombatantCard({ combatant, isActiveRound, onUpdate, onDelete }) 
         <input
           type="number"
           value={combatant.initiative}
-          onChange={(e) => onUpdate({ ...combatant, initiative: parseInt(e.target.value, 10) || 0 })}
+          onChange={(e) => {
+            const val = parseInt(e.target.value, 10);
+            onUpdate({ ...combatant, initiative: isNaN(val) ? 1 : Math.min(20, Math.max(1, val)) });
+          }}
           style={{
             width: '52px',
             textAlign: 'center',
@@ -136,12 +146,12 @@ export function CombatantCard({ combatant, isActiveRound, onUpdate, onDelete }) 
             color: 'var(--color-fg-default)',
             backgroundColor: 'var(--color-canvas-subtle)',
           }}
-          min="-20"
-          max="40"
+          min="1"
+          max="20"
+          onFocus={(e) => e.target.select()}
         />
       </label>
 
-      {/* Modifier */}
       <label style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px' }}>
         <span style={{ fontSize: '10px', color: 'var(--color-fg-subtle)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
           Mod
@@ -163,10 +173,10 @@ export function CombatantCard({ combatant, isActiveRound, onUpdate, onDelete }) 
           }}
           min="-10"
           max="20"
+          onFocus={(e) => e.target.select()}
         />
       </label>
 
-      {/* Total */}
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px', flexShrink: 0 }}>
         <span style={{ fontSize: '10px', color: 'var(--color-fg-subtle)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
           Total
@@ -184,7 +194,7 @@ export function CombatantCard({ combatant, isActiveRound, onUpdate, onDelete }) 
             border: `1px solid ${accentColor}33`,
           }}
         >
-          {combatant.initiative + combatant.modifier}
+          {Math.max(1, combatant.initiative + combatant.modifier)}
         </span>
       </div>
 

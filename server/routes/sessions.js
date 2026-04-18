@@ -1,73 +1,93 @@
 const express = require('express');
-const { v4: uuidv4 } = require('uuid');
+const Session = require('../models/Session');
 
 const router = express.Router();
+const MAX_SESSIONS = 5;
 
 function requireAuth(req, res, next) {
   if (req.isAuthenticated()) return next();
   return res.status(401).json({ error: 'Unauthorized' });
 }
 
-// In-memory store keyed by userId -> sessions map
-const store = new Map();
-
-function getUserSessions(userId) {
-  if (!store.has(userId)) store.set(userId, new Map());
-  return store.get(userId);
+function toDTO(doc) {
+  return {
+    id: doc._id.toString(),
+    name: doc.name,
+    players: doc.players || [],
+    lastAccessed: doc.lastAccessed,
+    createdAt: doc.createdAt,
+  };
 }
 
-// List all sessions for logged-in user
-router.get('/', requireAuth, (req, res) => {
-  const sessions = getUserSessions(req.user.id);
-  res.json(Array.from(sessions.values()));
+// List sessions sorted by lastAccessed desc
+router.get('/', requireAuth, async (req, res) => {
+  const sessions = await Session.find({ userId: req.user.id })
+    .sort({ lastAccessed: -1 })
+    .lean();
+  res.json(sessions.map(toDTO));
 });
 
-// Create new encounter session
-router.post('/', requireAuth, (req, res) => {
+// Create session (max 5 per user)
+router.post('/', requireAuth, async (req, res) => {
   const { name } = req.body;
-  if (!name || typeof name !== 'string' || !name.trim()) {
-    return res.status(400).json({ error: 'Session name is required' });
+  if (!name?.trim()) return res.status(400).json({ error: 'Session name is required' });
+  const count = await Session.countDocuments({ userId: req.user.id });
+  if (count >= MAX_SESSIONS) {
+    return res.status(400).json({
+      error: `Maximum of ${MAX_SESSIONS} sessions reached. Delete one to create a new session.`,
+    });
   }
-  const sessions = getUserSessions(req.user.id);
-  const session = {
-    id: uuidv4(),
+  const session = await Session.create({
+    userId: req.user.id,
     name: name.trim(),
-    combatants: [],
-    round: 1,
-    createdAt: new Date().toISOString(),
-  };
-  sessions.set(session.id, session);
-  res.status(201).json(session);
+    players: [],
+  });
+  res.status(201).json(toDTO(session));
 });
 
-// Get single session
-router.get('/:id', requireAuth, (req, res) => {
-  const sessions = getUserSessions(req.user.id);
-  const session = sessions.get(req.params.id);
-  if (!session) return res.status(404).json({ error: 'Session not found' });
-  res.json(session);
+// Get single session — updates lastAccessed
+router.get('/:id', requireAuth, async (req, res) => {
+  try {
+    const session = await Session.findOneAndUpdate(
+      { _id: req.params.id, userId: req.user.id },
+      { lastAccessed: new Date() },
+      { returnDocument: 'after' }
+    ).lean();
+    if (!session) return res.status(404).json({ error: 'Session not found' });
+    res.json(toDTO(session));
+  } catch {
+    res.status(404).json({ error: 'Session not found' });
+  }
 });
 
-// Update session (combatants, round, etc.)
-router.put('/:id', requireAuth, (req, res) => {
-  const sessions = getUserSessions(req.user.id);
-  const session = sessions.get(req.params.id);
-  if (!session) return res.status(404).json({ error: 'Session not found' });
-
-  const { combatants, round, name } = req.body;
-  if (name !== undefined) session.name = name.trim();
-  if (round !== undefined) session.round = round;
-  if (combatants !== undefined) session.combatants = combatants;
-
-  res.json(session);
+// Update session — only persists name and player roster
+router.put('/:id', requireAuth, async (req, res) => {
+  const { name, players } = req.body;
+  const update = {};
+  if (name !== undefined) update.name = name.trim();
+  if (players !== undefined) update.players = players;
+  try {
+    const session = await Session.findOneAndUpdate(
+      { _id: req.params.id, userId: req.user.id },
+      update,
+      { returnDocument: 'after' }
+    ).lean();
+    if (!session) return res.status(404).json({ error: 'Session not found' });
+    res.json(toDTO(session));
+  } catch {
+    res.status(404).json({ error: 'Session not found' });
+  }
 });
 
 // Delete session
-router.delete('/:id', requireAuth, (req, res) => {
-  const sessions = getUserSessions(req.user.id);
-  if (!sessions.has(req.params.id)) return res.status(404).json({ error: 'Session not found' });
-  sessions.delete(req.params.id);
-  res.json({ success: true });
+router.delete('/:id', requireAuth, async (req, res) => {
+  try {
+    const result = await Session.deleteOne({ _id: req.params.id, userId: req.user.id });
+    if (result.deletedCount === 0) return res.status(404).json({ error: 'Session not found' });
+    res.json({ success: true });
+  } catch {
+    res.status(404).json({ error: 'Session not found' });
+  }
 });
 
 module.exports = router;
