@@ -5,17 +5,27 @@ SERVER_PORT=3001
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 CLIENT_DIR="$SCRIPT_DIR/client"
 SERVER_DIR="$SCRIPT_DIR/server"
+DOCKER_CMD=(docker)
+
+if ! docker info > /dev/null 2>&1; then
+  echo "  Docker needs elevated access on this machine."
+  if ! sudo -v; then
+    echo "  Unable to authenticate for Docker access."
+    exit 1
+  fi
+  DOCKER_CMD=(sudo docker)
+fi
 
 # --- MongoDB ---
 echo "Starting MongoDB..."
-if docker ps -q --filter "name=^/mongodb$" | grep -q .; then
+if "${DOCKER_CMD[@]}" ps -q --filter "name=^/mongodb$" | grep -q .; then
   echo "  MongoDB already running."
-elif docker ps -aq --filter "name=^/mongodb$" | grep -q .; then
+elif "${DOCKER_CMD[@]}" ps -aq --filter "name=^/mongodb$" | grep -q .; then
   echo "  Restarting existing container..."
-  docker start mongodb
+  "${DOCKER_CMD[@]}" start mongodb
 else
   echo "  Creating new container..."
-  docker run -d \
+  "${DOCKER_CMD[@]}" run -d \
     --name mongodb \
     -p 27017:27017 \
     -v mongodb_data:/data/db \
