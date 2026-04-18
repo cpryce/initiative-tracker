@@ -194,7 +194,7 @@ export function CombatantCard({ combatant, isActiveRound, onUpdate, onDelete, au
             borderRadius: '4px',
             outline: 'none',
             backgroundColor: 'transparent',
-            fontSize: '15px',
+            fontSize: '18pt',
             fontWeight: 500,
             color: nameColor,
             padding: '2px 4px',
@@ -213,7 +213,7 @@ export function CombatantCard({ combatant, isActiveRound, onUpdate, onDelete, au
               const s = STATUSES.find((s) => s.key === key);
               return s ? (
                 <BadgeTooltip key={key} label={s.label} desc={s.desc}>
-                  <span style={{ fontSize: '13px', lineHeight: 1, cursor: 'default' }}>{s.icon}</span>
+                  <span style={{ fontSize: '20px', lineHeight: 1, cursor: 'default' }}>{s.icon}</span>
                 </BadgeTooltip>
               ) : null;
             })}
@@ -353,7 +353,7 @@ export function CombatantCard({ combatant, isActiveRound, onUpdate, onDelete, au
                   marginBottom: '2px',
                 }}
               >
-                <span style={{ fontSize: '18px', lineHeight: 1, flexShrink: 0 }}>{s.icon}</span>
+                <span style={{ fontSize: '22px', lineHeight: 1, flexShrink: 0 }}>{s.icon}</span>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontSize: '13px', fontWeight: active ? 600 : 400, color: active ? 'var(--color-attention-fg)' : 'var(--color-fg-default)' }}>
                     <a
