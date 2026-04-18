@@ -5,6 +5,22 @@ import { UserMenu } from '../components/UserMenu';
 
 const MAX_SESSIONS = 5;
 
+function formatRelativeTime(dateStr) {
+  if (!dateStr) return 'Never opened';
+  const diff = Date.now() - new Date(dateStr).getTime();
+  const minutes = Math.floor(diff / 60000);
+  if (minutes < 1) return 'Just now';
+  if (minutes < 60) return `${minutes}m ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.floor(hours / 24);
+  if (days === 1) return 'Yesterday';
+  if (days < 30) return `${days}d ago`;
+  const months = Math.floor(days / 30);
+  if (months < 12) return `${months}mo ago`;
+  return `${Math.floor(months / 12)}y ago`;
+}
+
 export function SessionsPage({ onSettingsOpen }) {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
@@ -172,18 +188,10 @@ export function SessionsPage({ onSettingsOpen }) {
                     <p className="text-xs" style={{ color: 'var(--color-fg-muted)' }}>
                       {s.players?.length ?? 0} players saved
                     </p>
-                    {i === 0 && (
-                      <span style={{
-                        fontSize: '10px',
-                        backgroundColor: 'var(--color-accent-subtle)',
-                        color: 'var(--color-accent-fg)',
-                        border: '1px solid var(--color-accent-fg)',
-                        borderRadius: '4px',
-                        padding: '0 4px',
-                        fontWeight: 600,
-                        letterSpacing: '0.04em',
-                      }}>RECENT</span>
-                    )}
+                    <span style={{ color: 'var(--color-fg-subtle)', fontSize: '11px' }}>·</span>
+                    <p className="text-xs" style={{ color: 'var(--color-fg-subtle)' }}>
+                      {formatRelativeTime(s.lastAccessed)}
+                    </p>
                   </div>
                 </div>
                 <button
