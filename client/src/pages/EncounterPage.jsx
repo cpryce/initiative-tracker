@@ -51,6 +51,7 @@ export function EncounterPage({ onSettingsOpen }) {
           initiative: 0,
           modifier: 0,
           flatFooted: false,
+          statuses: [],
         }));
         setCombatants(initialCombatants);
         setRound(1);
@@ -124,7 +125,7 @@ export function EncounterPage({ onSettingsOpen }) {
   };
 
   const addCombatant = (type) => {
-    const c = { id: newId(), name: type === 'npc' ? 'NPC' : 'Player', type, initiative: 0, modifier: 0, flatFooted: false };
+    const c = { id: newId(), name: type === 'npc' ? 'NPC' : 'Player', type, initiative: 0, modifier: 0, flatFooted: false, statuses: [] };
     setCombatants((prev) => {
       const next = [...prev, c];
       if (type === 'player') savePlayers(next);   // Only save PC adds
@@ -187,7 +188,8 @@ export function EncounterPage({ onSettingsOpen }) {
         top: 0,
         zIndex: 10,
       }}>
-        <div className="max-w-4xl mx-auto flex items-center justify-between h-14">
+        <div className="max-w-4xl mx-auto h-14" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          {/* Left: back + session name */}
           <div className="flex items-center gap-3">
             <button
               onClick={() => navigate('/sessions')}
@@ -222,44 +224,71 @@ export function EncounterPage({ onSettingsOpen }) {
             </span>
             {saving && <span style={{ fontSize: '12px', color: 'var(--color-header-muted)' }}>Saving…</span>}
           </div>
-          <UserMenu user={user} onLogout={logout} onSettingsOpen={onSettingsOpen} />
+
+          {/* Right: UserMenu */}
+          <div>
+            <UserMenu user={user} onLogout={logout} onSettingsOpen={onSettingsOpen} />
+          </div>
         </div>
       </header>
 
       <main className="max-w-4xl mx-auto px-6 py-6">
-        {/* Round & turn controls */}
-        <div
-          className="flex flex-wrap items-center justify-between gap-4 p-4 rounded-lg mb-6"
-          style={{
-            backgroundColor: 'var(--color-canvas-default)',
-            border: '1px solid var(--color-border-default)',
-            boxShadow: 'none',
-          }}
-        >
-          <div className="flex items-center gap-6">
-            <div>
-              <span style={{ fontSize: '11px', color: 'var(--color-fg-subtle)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Round</span>
-              <div style={{ fontSize: '28px', fontWeight: 700, color: 'var(--color-accent-fg)', lineHeight: 1.2 }}>{round}</div>
+        {/* Turn controls */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+          {/* Left: add buttons */}
+          <div className="flex gap-2">
+            <button
+              onClick={() => addCombatant('player')}
+              title="Add Player"
+              style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '4px 10px', borderRadius: '6px', border: '1px solid var(--color-border-default)', backgroundColor: '#ffffff', cursor: 'pointer' }}
+            >
+              <span style={{ fontSize: '14px', fontWeight: 700, color: '#57606a', lineHeight: 1 }}>+</span>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="#1f2328" aria-label="Player" style={{ display: 'block' }}>
+                <circle cx="12" cy="7" r="4" />
+                <path d="M4 21 C4 16 8 13 12 13 C16 13 20 16 20 21" strokeLinecap="round" />
+              </svg>
+            </button>
+            <button
+              onClick={() => addCombatant('npc')}
+              title="Add NPC"
+              style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '4px 10px', borderRadius: '6px', border: '1px solid var(--color-border-default)', backgroundColor: '#ffffff', cursor: 'pointer' }}
+            >
+              <span style={{ fontSize: '14px', fontWeight: 700, color: '#57606a', lineHeight: 1 }}>+</span>
+              <svg width="24" height="24" viewBox="0 0 32 32" fill="none" aria-label="NPC Monster" style={{ display: 'block' }}>
+                {/* Monster face */}
+                <path d="M9 10 Q7 6 10 5 Q11 9 13 10 Z M23 10 Q25 6 22 5 Q21 9 19 10 Z" fill="#b06d00" />
+                <ellipse cx="16" cy="18" rx="9" ry="9" fill="#b06d00" />
+                <circle cx="12.5" cy="16" r="2" fill="#ffffff" />
+                <circle cx="19.5" cy="16" r="2" fill="#ffffff" />
+                <circle cx="13" cy="16.5" r="0.9" fill="#1f2328" />
+                <circle cx="20" cy="16.5" r="0.9" fill="#1f2328" />
+                <path d="M11 22 L13 20 L15 22 L17 20 L19 22 L21 20 L21 23 Q16 26 11 23 Z" fill="#ffffff" />
+              </svg>
+            </button>
+          </div>
+
+          {/* Center: round + turn */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '4px 14px' }}>
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: '5px' }}>
+              <span style={{ fontSize: '10px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--color-fg-subtle)' }}>Round</span>
+              <span style={{ fontSize: '20px', fontWeight: 700, lineHeight: 1, color: 'var(--color-accent-fg)' }}>{round}</span>
             </div>
-            <div>
-              <span style={{ fontSize: '11px', color: 'var(--color-fg-subtle)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Turn</span>
-              <div style={{ fontSize: '18px', fontWeight: 600, color: 'var(--color-fg-default)', lineHeight: 1.3 }}>
+            <div style={{ width: '1px', alignSelf: 'stretch', backgroundColor: 'var(--color-border-muted)' }} />
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: '5px', minWidth: 0 }}>
+              <span style={{ fontSize: '10px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--color-fg-subtle)', flexShrink: 0 }}>Turn</span>
+              <span style={{ fontSize: '14px', fontWeight: 600, color: 'var(--color-fg-default)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '140px' }}>
                 {combatants[activeIndex]?.name ?? '—'}
-              </div>
+              </span>
             </div>
           </div>
-          <div className="flex gap-2 flex-wrap items-center">
-            <button onClick={prevTurn} style={btnStyle('secondary')} title="Previous turn">←</button>
-            <button onClick={nextTurn} style={btnStyle('primary')} title="Next turn">→</button>
+
+          {/* Right: prev/next/sort/reset */}
+          <div className="flex gap-2" style={{ justifyContent: 'flex-end' }}>
+            <button onClick={prevTurn} style={iconBtnStyle('secondary')} title="Previous turn">←</button>
+            <button onClick={nextTurn} style={iconBtnStyle('primary')} title="Next turn">→</button>
             <button onClick={sortByInitiative} style={iconBtnStyle('secondary')} title="Sort by initiative">⇅</button>
             <button onClick={resetRound} style={iconBtnStyle('danger')} title="Reset round">↺</button>
           </div>
-        </div>
-
-        {/* Add buttons */}
-        <div className="flex gap-2 mb-4">
-          <button onClick={() => addCombatant('player')} style={btnStyle('primary')}>+ Add Player</button>
-          <button onClick={() => addCombatant('npc')} style={btnStyle('secondary')}>+ Add NPC</button>
         </div>
 
         {/* Combatant list */}
@@ -276,7 +305,7 @@ export function EncounterPage({ onSettingsOpen }) {
         ) : (
           <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
             <SortableContext items={combatants.map((c) => c.id)} strategy={verticalListSortingStrategy}>
-              <div className="flex flex-col gap-2">
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1px' }}>
                 {combatants.map((c, i) => (
                   <CombatantCard
                     key={c.id}
