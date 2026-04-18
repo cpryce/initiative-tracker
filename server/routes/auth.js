@@ -6,6 +6,7 @@ const CLIENT_URL = process.env.CLIENT_URL || 'http://localhost:5173';
 
 router.get('/google', passport.authenticate('google', {
   scope: ['profile', 'email'],
+  prompt: 'select_account',
 }));
 
 router.get('/google/callback',
@@ -25,7 +26,11 @@ router.get('/me', (req, res) => {
 router.post('/logout', (req, res, next) => {
   req.logout((err) => {
     if (err) return next(err);
-    res.json({ success: true });
+    req.session.destroy((destroyErr) => {
+      if (destroyErr) return next(destroyErr);
+      res.clearCookie('connect.sid');
+      res.json({ success: true });
+    });
   });
 });
 

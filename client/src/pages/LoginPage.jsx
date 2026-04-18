@@ -21,8 +21,23 @@ export function LoginPage() {
         </div>
 
         <div className="mb-6">
-          <svg className="mx-auto w-16 h-16 opacity-30" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/>
+          <svg className="mx-auto" width="80" height="80" viewBox="0 0 64 64" aria-label="Initiative Tracker">
+            {/* Sword 1: top-left to bottom-right */}
+            <g transform="rotate(45 32 32)">
+              <rect x="30" y="4" width="4" height="36" rx="1" fill="var(--color-fg-default)"/>
+              <rect x="22" y="37" width="20" height="4" rx="2" fill="var(--color-fg-muted)"/>
+              <rect x="30.5" y="41" width="3" height="10" rx="1.5" fill="var(--color-fg-muted)"/>
+              <circle cx="32" cy="53" r="3" fill="var(--color-fg-muted)"/>
+              <polygon points="32,4 30,10 34,10" fill="var(--color-fg-default)"/>
+            </g>
+            {/* Sword 2: top-right to bottom-left */}
+            <g transform="rotate(-45 32 32)">
+              <rect x="30" y="4" width="4" height="36" rx="1" fill="var(--color-fg-default)"/>
+              <rect x="22" y="37" width="20" height="4" rx="2" fill="var(--color-fg-muted)"/>
+              <rect x="30.5" y="41" width="3" height="10" rx="1.5" fill="var(--color-fg-muted)"/>
+              <circle cx="32" cy="53" r="3" fill="var(--color-fg-muted)"/>
+              <polygon points="32,4 30,10 34,10" fill="var(--color-fg-default)"/>
+            </g>
           </svg>
         </div>
 
