@@ -4,6 +4,7 @@ const PlayerSchema = new mongoose.Schema({
   id: { type: String, required: true },
   name: { type: String, default: 'Player' },
   type: { type: String, default: 'player' },
+  modifier: { type: Number, default: 0 },
 }, { _id: false });
 
 const SessionSchema = new mongoose.Schema({

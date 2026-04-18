@@ -46,10 +46,10 @@ export function EncounterPage({ onSettingsOpen }) {
       .then((data) => {
         setSession(data);
         setEditName(data.name);
-        const initialCombatants = (data.players || []).map((p) => ({
+    const initialCombatants = (data.players || []).map((p) => ({
           ...p,
           initiative: 0,
-          modifier: 0,
+          modifier: p.modifier ?? 0,
           flatFooted: false,
           statuses: [],
         }));
@@ -65,7 +65,7 @@ export function EncounterPage({ onSettingsOpen }) {
   const savePlayers = useCallback(async (allCombatants) => {
     const players = allCombatants
       .filter((c) => c.type === 'player')
-      .map(({ id: cid, name, type }) => ({ id: cid, name, type }));
+      .map(({ id: cid, name, type, modifier }) => ({ id: cid, name, type, modifier: modifier ?? 0 }));
     setSaving(true);
     try {
       await fetch(`/api/sessions/${id}`, {
@@ -138,8 +138,8 @@ export function EncounterPage({ onSettingsOpen }) {
     setCombatants((prev) => {
       const old = prev.find((c) => c.id === updated.id);
       const next = prev.map((c) => (c.id === updated.id ? updated : c));
-      // Save if a PC name changed (roster update)
-      if (old?.type === 'player' && old?.name !== updated.name) savePlayers(next);
+      // Save if a PC name or modifier changed
+      if (old?.type === 'player' && (old?.name !== updated.name || old?.modifier !== updated.modifier)) savePlayers(next);
       return next;
     });
   };
