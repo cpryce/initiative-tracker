@@ -94,7 +94,7 @@ const STATUSES = [
   { key: 'dead',        label: 'Dead',        icon: <DeadIcon />,        desc: 'HP ≤ −10 or killed outright by an effect',              url: 'https://www.d20srd.org/srd/conditionSummary.htm#dead' },
 ];
 
-export function CombatantCard({ combatant, isActiveRound, isSelected, isDeferred, onSelect, onDeselect, onUpdate, onDelete, autoFocus }) {
+export function CombatantCard({ combatant, isActiveRound, isSelected, isDeferred, index, onSelect, onDeselect, onUpdate, onDelete, autoFocus }) {
   const nameRef = useRef(null);
   const statusBtnRef = useRef(null);
   const popupRef = useRef(null);
@@ -258,6 +258,7 @@ export function CombatantCard({ combatant, isActiveRound, isSelected, isDeferred
             const val = parseInt(e.target.value, 10);
             onUpdate({ ...combatant, initiative: isNaN(val) ? 1 : Math.min(20, Math.max(1, val)) });
           }}
+          tabIndex={index + 1}
           style={{
             width: '36px',
             textAlign: 'center',

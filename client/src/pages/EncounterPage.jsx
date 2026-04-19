@@ -249,7 +249,11 @@ export function EncounterPage({ onSettingsOpen }) {
     });
   };
 
-  const resetRound = () => { setActiveIndex(0); setRound(1); };
+  const resetRound = () => {
+    setActiveIndex(0);
+    setRound(1);
+    setCombatants((prev) => prev.map((c) => ({ ...c, deferred: false })));
+  };
 
   if (loading) {
     return (
@@ -392,6 +396,7 @@ export function EncounterPage({ onSettingsOpen }) {
                   <CombatantCard
                     key={c.id}
                     combatant={c}
+                    index={i}
                     isActiveRound={i === activeIndex}
                     isSelected={c.id === selectedId}
                     isDeferred={!!c.deferred}
