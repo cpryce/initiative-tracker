@@ -94,7 +94,7 @@ const STATUSES = [
   { key: 'dead',        label: 'Dead',        icon: <DeadIcon />,        desc: 'HP ≤ −10 or killed outright by an effect',              url: 'https://www.d20srd.org/srd/conditionSummary.htm#dead' },
 ];
 
-export function CombatantCard({ combatant, isActiveRound, onUpdate, onDelete, autoFocus }) {
+export function CombatantCard({ combatant, isActiveRound, isSelected, onSelect, onUpdate, onDelete, autoFocus }) {
   const nameRef = useRef(null);
   const statusBtnRef = useRef(null);
   const popupRef = useRef(null);
@@ -166,10 +166,10 @@ export function CombatantCard({ combatant, isActiveRound, onUpdate, onDelete, au
         border: `1px solid ${isActiveRound ? 'var(--color-success-fg)' : 'var(--color-border-default)'}`,
         borderRadius: '8px',
         boxShadow: 'none',
-        padding: '6px 8px',
+        padding: '4px 6px',
         display: 'flex',
         alignItems: 'center',
-        gap: '8px',
+        gap: '6px',
         userSelect: 'none',
       }}
     >
@@ -177,12 +177,21 @@ export function CombatantCard({ combatant, isActiveRound, onUpdate, onDelete, au
       <span
         {...attributes}
         {...listeners}
-        style={{ cursor: 'grab', color: 'var(--color-fg-subtle)', fontSize: '16px', lineHeight: 1, padding: '4px', flexShrink: 0, touchAction: 'none' }}
-        title="Drag to reorder"
+        onClick={() => onSelect(combatant.id)}
+        style={{
+          cursor: 'grab',
+          color: isSelected ? 'var(--color-accent-fg)' : 'var(--color-fg-subtle)',
+          fontSize: '14px', lineHeight: 1, padding: '3px', flexShrink: 0, touchAction: 'none',
+          backgroundColor: isSelected ? 'var(--color-accent-subtle)' : 'transparent',
+          borderRadius: '4px',
+          outline: isSelected ? '2px solid var(--color-accent-fg)' : 'none',
+          transition: 'color 0.1s, background-color 0.1s',
+        }}
+        title={isSelected ? 'Selected — use ↑/↓ to move, Esc to deselect' : 'Click to select, then use ↑/↓ to move'}
       >⠿</span>
 
       {/* Name + inline status badges */}
-      <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '4px', minWidth: 0 }}>
+      <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '3px', minWidth: 0 }}>
         <input
           ref={nameRef}
           type="text"
@@ -194,10 +203,10 @@ export function CombatantCard({ combatant, isActiveRound, onUpdate, onDelete, au
             borderRadius: '4px',
             outline: 'none',
             backgroundColor: 'transparent',
-            fontSize: '18pt',
+            fontSize: '16pt',
             fontWeight: 500,
             color: nameColor,
-            padding: '2px 4px',
+            padding: '1px 3px',
             cursor: 'text',
             transition: 'border-color 0.15s',
             minWidth: 0,
@@ -213,7 +222,7 @@ export function CombatantCard({ combatant, isActiveRound, onUpdate, onDelete, au
               const s = STATUSES.find((s) => s.key === key);
               return s ? (
                 <BadgeTooltip key={key} label={s.label} desc={s.desc}>
-                  <span style={{ fontSize: '20px', lineHeight: 1, cursor: 'default' }}>{s.icon}</span>
+                  <span style={{ fontSize: '17px', lineHeight: 1, cursor: 'default' }}>{s.icon}</span>
                 </BadgeTooltip>
               ) : null;
             })}
@@ -222,8 +231,8 @@ export function CombatantCard({ combatant, isActiveRound, onUpdate, onDelete, au
       </div>
 
       {/* Initiative roll */}
-      <label style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px' }}>
-        <span style={{ fontSize: '10px', color: 'var(--color-fg-subtle)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Roll</span>
+      <label style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1px' }}>
+        <span style={{ fontSize: '9px', color: 'var(--color-fg-subtle)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Roll</span>
         <input
           type="number"
           value={combatant.initiative}
@@ -232,12 +241,12 @@ export function CombatantCard({ combatant, isActiveRound, onUpdate, onDelete, au
             onUpdate({ ...combatant, initiative: isNaN(val) ? 1 : Math.min(20, Math.max(1, val)) });
           }}
           style={{
-            width: '40px',
+            width: '36px',
             textAlign: 'center',
             border: '1px solid var(--color-border-default)',
             borderRadius: '6px',
-            padding: '4px 2px',
-            fontSize: '14px',
+            padding: '3px 2px',
+            fontSize: '13px',
             fontWeight: 600,
             color: 'var(--color-fg-default)',
             backgroundColor: 'var(--color-canvas-subtle)',
@@ -249,19 +258,19 @@ export function CombatantCard({ combatant, isActiveRound, onUpdate, onDelete, au
       </label>
 
       {/* Modifier */}
-      <label style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px' }}>
-        <span style={{ fontSize: '10px', color: 'var(--color-fg-subtle)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Mod</span>
+      <label style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1px' }}>
+        <span style={{ fontSize: '9px', color: 'var(--color-fg-subtle)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Mod</span>
         <input
           type="number"
           value={combatant.modifier}
           onChange={(e) => onUpdate({ ...combatant, modifier: parseInt(e.target.value, 10) || 0 })}
           style={{
-            width: '40px',
+            width: '36px',
             textAlign: 'center',
             border: '1px solid var(--color-border-default)',
             borderRadius: '6px',
-            padding: '4px 2px',
-            fontSize: '14px',
+            padding: '3px 2px',
+            fontSize: '13px',
             fontWeight: 600,
             color: 'var(--color-fg-default)',
             backgroundColor: 'var(--color-canvas-subtle)',
@@ -273,17 +282,17 @@ export function CombatantCard({ combatant, isActiveRound, onUpdate, onDelete, au
       </label>
 
       {/* Total */}
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px', flexShrink: 0 }}>
-        <span style={{ fontSize: '10px', color: 'var(--color-fg-subtle)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Total</span>
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1px', flexShrink: 0 }}>
+        <span style={{ fontSize: '9px', color: 'var(--color-fg-subtle)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Total</span>
         <span style={{
-          width: '40px',
+          width: '36px',
           textAlign: 'center',
-          fontSize: '16px',
+          fontSize: '14px',
           fontWeight: 700,
           color: accentColor,
           backgroundColor: accentBg,
           borderRadius: '6px',
-          padding: '4px 2px',
+          padding: '3px 2px',
           border: `1px solid ${accentColor}33`,
         }}>
           {Math.max(1, combatant.initiative + combatant.modifier)}
@@ -297,9 +306,9 @@ export function CombatantCard({ combatant, isActiveRound, onUpdate, onDelete, au
         onClick={() => setShowStatus((v) => !v)}
         onPointerDown={(e) => e.stopPropagation()}
         style={{
-          fontSize: '15px',
+          fontSize: '13px',
           lineHeight: 1,
-          padding: '4px 6px',
+          padding: '3px 5px',
           borderRadius: '4px',
           border: '1px solid var(--color-border-muted)',
           cursor: 'pointer',
@@ -409,8 +418,8 @@ export function CombatantCard({ combatant, isActiveRound, onUpdate, onDelete, au
           backgroundColor: 'transparent',
           border: 'none',
           cursor: 'pointer',
-          fontSize: '16px',
-          padding: '4px',
+          fontSize: '14px',
+          padding: '3px',
           lineHeight: 1,
           flexShrink: 0,
         }}

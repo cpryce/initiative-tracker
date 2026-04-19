@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   DndContext,
@@ -34,6 +34,9 @@ export function EncounterPage({ onSettingsOpen }) {
   const [saving, setSaving] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
   const [round, setRound] = useState(1);
+  const [selectedId, setSelectedId] = useState(null);
+  const selectedIdRef = useRef(null);
+  selectedIdRef.current = selectedId;
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
@@ -89,6 +92,28 @@ export function EncounterPage({ onSettingsOpen }) {
       return arrayMove(prev, oldIndex, newIndex);
     });
   };
+
+  const moveSelected = useCallback((direction) => {
+    const sid = selectedIdRef.current;
+    if (!sid) return;
+    setCombatants((prev) => {
+      const idx = prev.findIndex((c) => c.id === sid);
+      if (idx === -1) return prev;
+      const next = idx + direction;
+      if (next < 0 || next >= prev.length) return prev;
+      return arrayMove(prev, idx, next);
+    });
+  }, []);
+
+  useEffect(() => {
+    const handler = (e) => {
+      if (e.key === 'ArrowUp')   { e.preventDefault(); moveSelected(-1); }
+      if (e.key === 'ArrowDown') { e.preventDefault(); moveSelected(1); }
+      if (e.key === 'Escape')    { setSelectedId(null); }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [moveSelected]);
 
   const sortByInitiative = () => {
     setCombatants((prev) =>
@@ -313,6 +338,8 @@ export function EncounterPage({ onSettingsOpen }) {
                     key={c.id}
                     combatant={c}
                     isActiveRound={i === activeIndex}
+                    isSelected={c.id === selectedId}
+                    onSelect={(cid) => setSelectedId((prev) => prev === cid ? null : cid)}
                     onUpdate={updateCombatant}
                     onDelete={deleteCombatant}
                     autoFocus={c.id === focusId}
