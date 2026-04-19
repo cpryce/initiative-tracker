@@ -105,15 +105,37 @@ export function EncounterPage({ onSettingsOpen }) {
     });
   }, []);
 
+  const nextTurn = useCallback(() => {
+    if (combatants.length === 0) return;
+    const next = activeIndex + 1;
+    if (next >= combatants.length) {
+      setRound((r) => r + 1);
+      setCombatants((prev) => prev.map((c) => ({ ...c, flatFooted: false })));
+      setActiveIndex(0);
+    } else {
+      setActiveIndex(next);
+    }
+  }, [combatants.length, activeIndex]);
+
+  const prevTurn = useCallback(() => setActiveIndex((prev) => Math.max(0, prev - 1)), []);
+
   useEffect(() => {
     const handler = (e) => {
-      if (e.key === 'ArrowUp')   { e.preventDefault(); moveSelected(-1); }
-      if (e.key === 'ArrowDown') { e.preventDefault(); moveSelected(1); }
+      if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        if (selectedIdRef.current) moveSelected(-1);
+        else prevTurn();
+      }
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        if (selectedIdRef.current) moveSelected(1);
+        else nextTurn();
+      }
       if (e.key === 'Escape')    { setSelectedId(null); }
     };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
-  }, [moveSelected]);
+  }, [moveSelected, prevTurn, nextTurn]);
 
   const sortByInitiative = () => {
     setCombatants((prev) =>
@@ -180,20 +202,6 @@ export function EncounterPage({ onSettingsOpen }) {
     });
   };
 
-  const nextTurn = () => {
-    if (combatants.length === 0) return;
-    const next = activeIndex + 1;
-    if (next >= combatants.length) {
-      setRound((r) => r + 1);
-      setCombatants((prev) => prev.map((c) => ({ ...c, flatFooted: false })));
-      setActiveIndex(0);
-    } else {
-      setActiveIndex(next);
-    }
-  };
-
-  const prevTurn = () => setActiveIndex((prev) => Math.max(0, prev - 1));
-
   const resetRound = () => { setActiveIndex(0); setRound(1); };
 
   if (loading) {
@@ -206,7 +214,7 @@ export function EncounterPage({ onSettingsOpen }) {
   }
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: 'var(--color-canvas-subtle)' }}>
+    <div className="min-h-screen" onClick={() => setSelectedId(null)} style={{ backgroundColor: 'var(--color-canvas-subtle)' }}>
       <header style={{
         backgroundColor: 'var(--color-header-bg)',
         borderBottom: '1px solid var(--color-header-border)',
@@ -340,6 +348,7 @@ export function EncounterPage({ onSettingsOpen }) {
                     isActiveRound={i === activeIndex}
                     isSelected={c.id === selectedId}
                     onSelect={(cid) => setSelectedId((prev) => prev === cid ? null : cid)}
+                    onDeselect={() => setSelectedId(null)}
                     onUpdate={updateCombatant}
                     onDelete={deleteCombatant}
                     autoFocus={c.id === focusId}
