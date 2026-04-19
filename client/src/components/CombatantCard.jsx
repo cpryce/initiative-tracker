@@ -94,7 +94,7 @@ const STATUSES = [
   { key: 'dead',        label: 'Dead',        icon: <DeadIcon />,        desc: 'HP ≤ −10 or killed outright by an effect',              url: 'https://www.d20srd.org/srd/conditionSummary.htm#dead' },
 ];
 
-export function CombatantCard({ combatant, isActiveRound, isSelected, onSelect, onDeselect, onUpdate, onDelete, autoFocus }) {
+export function CombatantCard({ combatant, isActiveRound, isSelected, isDeferred, onSelect, onDeselect, onUpdate, onDelete, autoFocus }) {
   const nameRef = useRef(null);
   const statusBtnRef = useRef(null);
   const popupRef = useRef(null);
@@ -172,8 +172,25 @@ export function CombatantCard({ combatant, isActiveRound, isSelected, onSelect, 
         alignItems: 'center',
         gap: '6px',
         userSelect: 'none',
+        marginLeft: isDeferred ? '72px' : '0',
+        transition: (style.transition ?? '') + ', margin-left 0.2s ease',
       }}
     >
+      {isDeferred && (
+        <span style={{
+          position: 'absolute',
+          right: 'calc(100% + 10px)',
+          top: '50%',
+          transform: 'translateY(-50%)',
+          fontSize: '10px',
+          fontWeight: 700,
+          textTransform: 'uppercase',
+          letterSpacing: '0.08em',
+          color: 'var(--color-attention-fg)',
+          whiteSpace: 'nowrap',
+          opacity: 0.85,
+        }}>Holding</span>
+      )}
       {/* Drag handle */}
       <span
         {...attributes}

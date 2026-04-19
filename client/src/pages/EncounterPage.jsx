@@ -84,13 +84,23 @@ export function EncounterPage({ onSettingsOpen }) {
     }
   }, [id]);
 
-  const handleDragEnd = ({ active, over }) => {
-    if (!over || active.id === over.id) return;
-    setCombatants((prev) => {
-      const oldIndex = prev.findIndex((c) => c.id === active.id);
-      const newIndex = prev.findIndex((c) => c.id === over.id);
-      return arrayMove(prev, oldIndex, newIndex);
-    });
+  const handleDragEnd = ({ active, over, delta }) => {
+    const DEFER_THRESHOLD = 60;
+    const reordered = over && active.id !== over.id;
+    if (reordered) {
+      setCombatants((prev) => {
+        const oldIndex = prev.findIndex((c) => c.id === active.id);
+        const newIndex = prev.findIndex((c) => c.id === over.id);
+        return arrayMove(prev, oldIndex, newIndex).map((c) =>
+          c.id === active.id ? { ...c, deferred: false } : c
+        );
+      });
+    } else {
+      const defer = (delta?.x ?? 0) >= DEFER_THRESHOLD;
+      setCombatants((prev) =>
+        prev.map((c) => c.id === active.id ? { ...c, deferred: defer } : c)
+      );
+    }
   };
 
   const moveSelected = useCallback((direction) => {
@@ -119,19 +129,56 @@ export function EncounterPage({ onSettingsOpen }) {
 
   const prevTurn = useCallback(() => setActiveIndex((prev) => Math.max(0, prev - 1)), []);
 
+  const deselectTimerRef = useRef(null);
+
   useEffect(() => {
     const handler = (e) => {
       if (e.key === 'ArrowUp') {
         e.preventDefault();
-        if (selectedIdRef.current) moveSelected(-1);
-        else prevTurn();
+        if (selectedIdRef.current) {
+          moveSelected(-1);
+          clearTimeout(deselectTimerRef.current);
+          const sid = selectedIdRef.current;
+          deselectTimerRef.current = setTimeout(() => {
+            if (selectedIdRef.current === sid) setSelectedId(null);
+          }, 1000);
+        } else {
+          prevTurn();
+        }
       }
       if (e.key === 'ArrowDown') {
         e.preventDefault();
-        if (selectedIdRef.current) moveSelected(1);
-        else nextTurn();
+        if (selectedIdRef.current) {
+          moveSelected(1);
+          clearTimeout(deselectTimerRef.current);
+          const sid = selectedIdRef.current;
+          deselectTimerRef.current = setTimeout(() => {
+            if (selectedIdRef.current === sid) setSelectedId(null);
+          }, 1000);
+        } else {
+          nextTurn();
+        }
       }
-      if (e.key === 'Escape')    { setSelectedId(null); }
+      if (e.key === 'ArrowRight' && selectedIdRef.current) {
+        e.preventDefault();
+        clearTimeout(deselectTimerRef.current);
+        setCombatants((prev) =>
+          prev.map((c) => c.id === selectedIdRef.current ? { ...c, deferred: true } : c)
+        );
+        setSelectedId(null);
+      }
+      if (e.key === 'ArrowLeft' && selectedIdRef.current) {
+        e.preventDefault();
+        clearTimeout(deselectTimerRef.current);
+        setCombatants((prev) =>
+          prev.map((c) => c.id === selectedIdRef.current ? { ...c, deferred: false } : c)
+        );
+        setSelectedId(null);
+      }
+      if (e.key === 'Escape') {
+        clearTimeout(deselectTimerRef.current);
+        setSelectedId(null);
+      }
     };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
@@ -347,6 +394,7 @@ export function EncounterPage({ onSettingsOpen }) {
                     combatant={c}
                     isActiveRound={i === activeIndex}
                     isSelected={c.id === selectedId}
+                    isDeferred={!!c.deferred}
                     onSelect={(cid) => setSelectedId((prev) => prev === cid ? null : cid)}
                     onDeselect={() => setSelectedId(null)}
                     onUpdate={updateCombatant}
