@@ -177,7 +177,7 @@ export function CombatantCard({ combatant, isActiveRound, onUpdate, onDelete, au
       <span
         {...attributes}
         {...listeners}
-        style={{ cursor: 'grab', color: 'var(--color-fg-subtle)', fontSize: '16px', lineHeight: 1, padding: '4px', flexShrink: 0 }}
+        style={{ cursor: 'grab', color: 'var(--color-fg-subtle)', fontSize: '16px', lineHeight: 1, padding: '4px', flexShrink: 0, touchAction: 'none' }}
         title="Drag to reorder"
       >⠿</span>
 
