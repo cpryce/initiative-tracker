@@ -37,6 +37,8 @@ export function EncounterPage({ onSettingsOpen }) {
   const [selectedId, setSelectedId] = useState(null);
   const selectedIdRef = useRef(null);
   selectedIdRef.current = selectedId;
+  const activeIndexRef = useRef(activeIndex);
+  activeIndexRef.current = activeIndex;
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
@@ -159,21 +161,33 @@ export function EncounterPage({ onSettingsOpen }) {
           nextTurn();
         }
       }
-      if (e.key === 'ArrowRight' && selectedIdRef.current) {
+      if (e.key === 'ArrowRight') {
         e.preventDefault();
-        clearTimeout(deselectTimerRef.current);
-        setCombatants((prev) =>
-          prev.map((c) => c.id === selectedIdRef.current ? { ...c, deferred: true } : c)
-        );
-        setSelectedId(null);
+        if (selectedIdRef.current) {
+          clearTimeout(deselectTimerRef.current);
+          setCombatants((prev) =>
+            prev.map((c) => c.id === selectedIdRef.current ? { ...c, deferred: true } : c)
+          );
+          setSelectedId(null);
+        } else {
+          setCombatants((prev) =>
+            prev.map((c, i) => i === activeIndexRef.current ? { ...c, deferred: true } : c)
+          );
+        }
       }
-      if (e.key === 'ArrowLeft' && selectedIdRef.current) {
+      if (e.key === 'ArrowLeft') {
         e.preventDefault();
-        clearTimeout(deselectTimerRef.current);
-        setCombatants((prev) =>
-          prev.map((c) => c.id === selectedIdRef.current ? { ...c, deferred: false } : c)
-        );
-        setSelectedId(null);
+        if (selectedIdRef.current) {
+          clearTimeout(deselectTimerRef.current);
+          setCombatants((prev) =>
+            prev.map((c) => c.id === selectedIdRef.current ? { ...c, deferred: false } : c)
+          );
+          setSelectedId(null);
+        } else {
+          setCombatants((prev) =>
+            prev.map((c, i) => i === activeIndexRef.current ? { ...c, deferred: false } : c)
+          );
+        }
       }
       if (e.key === 'Escape') {
         clearTimeout(deselectTimerRef.current);
