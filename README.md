@@ -13,7 +13,7 @@ Initiative Tracker is a web-based utility designed to help Dungeon Masters (DMs)
 ### Prerequisites
 - Node.js v18 or higher
 - npm
-- [Docker Desktop](https://www.docker.com/products/docker-desktop/) (used to run MongoDB)
+- A [MongoDB Atlas](https://www.mongodb.com/atlas) account with a cluster
 - A Google Cloud project with OAuth 2.0 credentials ([create one here](https://console.cloud.google.com/apis/credentials))
 
 ### Installation
@@ -38,7 +38,7 @@ Initiative Tracker is a web-based utility designed to help Dungeon Masters (DMs)
    SESSION_SECRET=<a long random string>
    GOOGLE_CLIENT_ID=<your Google OAuth client ID>
    GOOGLE_CLIENT_SECRET=<your Google OAuth client secret>
-   MONGO_URI=mongodb://localhost:27017/initiative-tracker
+   MONGO_URI=<your MongoDB Atlas connection string>
    ```
 
    In the Google Cloud Console, add the following as an **Authorized redirect URI**:
@@ -46,40 +46,21 @@ Initiative Tracker is a web-based utility designed to help Dungeon Masters (DMs)
    http://localhost:3001/auth/google/callback
    ```
 
-### Running MongoDB
-
-MongoDB runs in Docker. The `start.sh` script handles this automatically, but you can also start it manually:
-
-```bash
-docker run -d \
-  --name mongodb \
-  -p 27017:27017 \
-  -v mongodb_data:/data/db \
-  mongodb/mongodb-community-server:latest
-```
-
-**Connection string:** `mongodb://localhost:27017/initiative-tracker`
-
-The container persists data in a Docker volume (`mongodb_data`) so session data survives restarts.
-
 ### Running in Development
 
 The easiest way to start everything at once:
 ```bash
 ./start.sh
 ```
-This will start MongoDB (via Docker), wait for it to be ready, then start the Express server and Vite client in sequence.
+This will start the Express server and Vite client in sequence (MongoDB is hosted on Atlas).
 
 Or start each service manually:
 
 ```bash
-# Terminal 1 — MongoDB
-docker start mongodb
-
-# Terminal 2 — Express server (port 3001)
+# Terminal 1 — Express server (port 3001)
 cd server && npm run dev
 
-# Terminal 3 — Vite client (port 5173)
+# Terminal 2 — Vite client (port 5173)
 cd client && npm run dev
 ```
 
