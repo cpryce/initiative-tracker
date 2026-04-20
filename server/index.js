@@ -16,6 +16,10 @@ process.emit = function (event, warning, ...args) {
 const express = require('express');
 const cors = require('cors');
 const session = require('express-session');
+let MongoStore;
+if (process.env.NODE_ENV === 'production') {
+  MongoStore = require('connect-mongo');
+}
 const passport = require('passport');
 
 require('./auth/passport');
@@ -38,6 +42,9 @@ app.use(session({
   secret: process.env.SESSION_SECRET || 'dev_secret_change_me',
   resave: false,
   saveUninitialized: false,
+  store: process.env.NODE_ENV === 'production'
+    ? MongoStore.create({ mongoUrl: process.env.MONGODB_URI })
+    : undefined,
   cookie: {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
