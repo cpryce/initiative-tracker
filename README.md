@@ -41,11 +41,6 @@ Initiative Tracker is a web-based utility designed to help Dungeon Masters (DMs)
    MONGO_URI=<your MongoDB Atlas connection string>
    ```
 
-   In the Google Cloud Console, add the following as an **Authorized redirect URI**:
-   ```
-   http://localhost:3001/auth/google/callback
-   ```
-
 ### Running in Development
 
 The easiest way to start everything at once:
