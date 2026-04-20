@@ -21,9 +21,11 @@ function toDTO(doc) {
 
 // List sessions sorted by lastAccessed desc
 router.get('/', requireAuth, async (req, res) => {
+  console.log('[DEBUG] GET /sessions — userId:', req.user.id, 'user:', JSON.stringify(req.user));
   const sessions = await Session.find({ userId: req.user.id })
     .sort({ lastAccessed: -1 })
     .lean();
+  console.log('[DEBUG] found', sessions.length, 'sessions for userId:', req.user.id);
   res.json(sessions.map(toDTO));
 });
 
@@ -37,6 +39,7 @@ router.post('/', requireAuth, async (req, res) => {
       error: `Maximum of ${MAX_SESSIONS} sessions reached. Delete one to create a new session.`,
     });
   }
+  console.log('[DEBUG] POST /sessions — creating with userId:', req.user.id);
   const session = await Session.create({
     userId: req.user.id,
     name: name.trim(),
