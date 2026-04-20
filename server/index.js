@@ -52,6 +52,14 @@ app.use(passport.session());
 app.use('/auth', authRouter);
 app.use('/api/sessions', sessionsRouter);
 
+if (process.env.NODE_ENV === 'production') {
+  const path = require('path');
+  app.use(express.static(path.join(__dirname, '../client/dist')));
+  app.get('*', (_req, res) => {
+    res.sendFile(path.join(__dirname, '../client/dist/index.html'));
+  });
+}
+
 connectDB().then(() => {
   app.listen(PORT, () => {
     console.log(`Server listening on http://localhost:${PORT}`);
