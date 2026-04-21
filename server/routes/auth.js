@@ -1,4 +1,3 @@
-console.log('CLIENT_URL:', process.env.CLIENT_URL)
 const express = require('express');
 const passport = require('passport');
 

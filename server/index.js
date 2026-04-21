@@ -1,4 +1,4 @@
-require('dotenv').config();
+require('dotenv').config({ path: require('path').join(__dirname, '.env') });
 
 // Suppress known DEP0169 url.parse() warning from passport-google-oauth20 dependency chain
 // Suppress Mongoose false-positive 'new option deprecated' warning (we already use returnDocument)
@@ -62,7 +62,7 @@ app.use('/api/sessions', sessionsRouter);
 if (process.env.NODE_ENV === 'production') {
   const path = require('path');
   app.use(express.static(path.join(__dirname, '../client/dist')));
-  app.get('/*', (_req, res) => {
+  app.get('/{*path}', (_req, res) => {
     res.sendFile(path.join(__dirname, '../client/dist/index.html'));
   });
 }
