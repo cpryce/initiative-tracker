@@ -38,36 +38,36 @@ app.use(cors({
 
 app.use(express.json());
 
-app.use(session({
-  secret: process.env.SESSION_SECRET || 'dev_secret_change_me',
-  resave: false,
-  saveUninitialized: false,
-  store: process.env.NODE_ENV === 'production'
-    ? MongoStore.create({ mongoUrl: process.env.MONGODB_URI })
-    : undefined,
-  cookie: {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-    maxAge: 24 * 60 * 60 * 1000, // 24 hours
-  },
-}));
-
-app.use(passport.initialize());
-app.use(passport.session());
-
-app.use('/auth', authRouter);
-app.use('/api/sessions', sessionsRouter);
-
-if (process.env.NODE_ENV === 'production') {
-  const path = require('path');
-  app.use(express.static(path.join(__dirname, '../client/dist')));
-  app.get(/.*/, (_req, res) => {
-    res.sendFile(path.join(__dirname, '../client/dist/index.html'));
-  });
-}
-
 connectDB().then(() => {
+  app.use(session({
+    secret: process.env.SESSION_SECRET || 'dev_secret_change_me',
+    resave: false,
+    saveUninitialized: false,
+    store: process.env.NODE_ENV === 'production'
+      ? MongoStore.create({ mongoUrl: process.env.MONGODB_URI })
+      : undefined,
+    cookie: {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+      maxAge: 24 * 60 * 60 * 1000, // 24 hours
+    },
+  }));
+
+  app.use(passport.initialize());
+  app.use(passport.session());
+
+  app.use('/auth', authRouter);
+  app.use('/api/sessions', sessionsRouter);
+
+  if (process.env.NODE_ENV === 'production') {
+    const path = require('path');
+    app.use(express.static(path.join(__dirname, '../client/dist')));
+    app.get(/.*/, (_req, res) => {
+      res.sendFile(path.join(__dirname, '../client/dist/index.html'));
+    });
+  }
+
   app.listen(PORT, () => {
     console.log(`Server listening on http://localhost:${PORT}`);
   });
