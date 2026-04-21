@@ -45,6 +45,7 @@ connectDB().then(() => {
     store = MongoStore.create({ mongoUrl: process.env.MONGODB_URI });
     console.log('[session] MongoStore created successfully');
     store.on('error', (err) => console.error('[session] MongoStore error:', err));
+    store.on('set', (sessionId) => console.log('[session] MongoStore saving session:', sessionId));
   }
 
   app.use(session({
@@ -66,10 +67,12 @@ connectDB().then(() => {
   }));
 
   app.use((req, res, next) => {
-    const originalSend = res.send;
-    res.send = function(data) {
-      console.log('[session] Response headers:', res.getHeaders());
-      return originalSend.call(this, data);
+    const originalSetHeader = res.setHeader;
+    res.setHeader = function(name, value) {
+      if (name.toLowerCase() === 'set-cookie') {
+        console.log('[session] Setting cookie:', value);
+      }
+      return originalSetHeader.call(this, name, value);
     };
     next();
   });
