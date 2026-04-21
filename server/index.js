@@ -58,7 +58,21 @@ connectDB().then(() => {
       sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
       maxAge: 24 * 60 * 60 * 1000, // 24 hours
     },
+    genid: (req) => {
+      const id = require('crypto').randomBytes(16).toString('hex');
+      console.log('[session] Generated new session ID:', id);
+      return id;
+    },
   }));
+
+  app.use((req, res, next) => {
+    const originalSend = res.send;
+    res.send = function(data) {
+      console.log('[session] Response headers:', res.getHeaders());
+      return originalSend.call(this, data);
+    };
+    next();
+  });
 
   app.use((req, _res, next) => {
     console.log('[session] sessionID:', req.sessionID, '| session:', JSON.stringify(req.session));
