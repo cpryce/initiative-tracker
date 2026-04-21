@@ -18,7 +18,15 @@ router.get('/google/callback',
   (req, res) => {
     console.log('[auth] /google/callback post-auth — isAuthenticated:', req.isAuthenticated());
     console.log('[auth] /google/callback post-auth — req.user:', req.user);
-    res.redirect(CLIENT_URL);
+
+    // Explicitly save the session to ensure it's persisted before redirect
+    req.session.save((err) => {
+      if (err) {
+        console.error('[auth] Session save error:', err);
+        return res.redirect(`${CLIENT_URL}/login?error=session_save_failed`);
+      }
+      res.redirect(CLIENT_URL);
+    });
   }
 );
 
