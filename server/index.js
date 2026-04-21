@@ -48,7 +48,9 @@ connectDB().then(() => {
     store.on('set', (sessionId) => console.log('[session] MongoStore saving session:', sessionId));
   }
 
+  console.log('[session] About to apply session middleware');
   app.use(session({
+    name: 'connect.sid',
     secret: process.env.SESSION_SECRET || 'dev_secret_change_me',
     resave: false,
     saveUninitialized: true,
@@ -65,6 +67,7 @@ connectDB().then(() => {
       return id;
     },
   }));
+  console.log('[session] Session middleware applied');
 
   console.log('[session] Cookie config:', {
     httpOnly: true,
@@ -92,6 +95,15 @@ connectDB().then(() => {
 
   app.use((req, _res, next) => {
     console.log('[session] sessionID:', req.sessionID, '| session:', JSON.stringify(req.session));
+    next();
+  });
+
+  app.use((req, res, next) => {
+    const originalJson = res.json;
+    res.json = function(data) {
+      console.log('[session] res.json called, session modified:', req.session.passport !== undefined);
+      return originalJson.call(this, data);
+    };
     next();
   });
 
