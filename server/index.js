@@ -66,11 +66,24 @@ connectDB().then(() => {
     },
   }));
 
+  console.log('[session] Cookie config:', {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+    domain: undefined, // Check if domain is being set
+    path: '/',
+  });
+
+  console.log('[session] CLIENT_URL:', process.env.CLIENT_URL);
+  console.log('[session] CALLBACK_URL:', process.env.CALLBACK_URL);
+
   app.use((req, res, next) => {
     const originalSetHeader = res.setHeader;
     res.setHeader = function(name, value) {
       if (name.toLowerCase() === 'set-cookie') {
-        console.log('[session] Setting cookie:', value);
+        console.log('[session] SETTING COOKIE:', value);
+        console.log('[session] Request origin:', req.get('origin'));
+        console.log('[session] Request host:', req.get('host'));
       }
       return originalSetHeader.call(this, name, value);
     };
