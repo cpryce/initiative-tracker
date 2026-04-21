@@ -10,13 +10,22 @@ router.get('/google', passport.authenticate('google', {
 }));
 
 router.get('/google/callback',
+  (req, res, next) => {
+    console.log('[auth] /google/callback hit');
+    next();
+  },
   passport.authenticate('google', { failureRedirect: `${CLIENT_URL}/login?error=auth_failed` }),
-  (_req, res) => {
+  (req, res) => {
+    console.log('[auth] /google/callback post-auth — isAuthenticated:', req.isAuthenticated());
+    console.log('[auth] /google/callback post-auth — req.user:', req.user);
     res.redirect(CLIENT_URL);
   }
 );
 
 router.get('/me', (req, res) => {
+  console.log('[auth] /me — isAuthenticated:', req.isAuthenticated());
+  console.log('[auth] /me — req.user:', req.user);
+  console.log('[auth] /me — session ID:', req.session?.id);
   if (req.isAuthenticated()) {
     return res.json({ user: req.user });
   }
