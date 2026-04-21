@@ -58,7 +58,7 @@ connectDB().then(() => {
     cookie: {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax', // Always use 'lax' for same-origin requests
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
       maxAge: 24 * 60 * 60 * 1000, // 24 hours
     },
     genid: (req) => {
@@ -73,8 +73,7 @@ connectDB().then(() => {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-    domain: undefined, // Check if domain is being set
-    path: '/',
+    maxAge: 24 * 60 * 60 * 1000,
   });
 
   console.log('[session] CLIENT_URL:', process.env.CLIENT_URL);
