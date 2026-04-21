@@ -50,7 +50,7 @@ connectDB().then(() => {
   app.use(session({
     secret: process.env.SESSION_SECRET || 'dev_secret_change_me',
     resave: false,
-    saveUninitialized: false,
+    saveUninitialized: true,
     store,
     cookie: {
       httpOnly: true,
