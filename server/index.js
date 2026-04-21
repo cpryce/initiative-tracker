@@ -91,10 +91,10 @@ connectDB().then(() => {
   if (process.env.NODE_ENV === 'production') {
     const path = require('path');
     app.use(express.static(path.join(__dirname, '../client/dist')));
-    app.get('*', (req, res) => {
+    app.use((req, res, next) => {
       // Don't serve index.html for API routes
       if (req.path.startsWith('/api') || req.path.startsWith('/auth')) {
-        return res.status(404).json({ error: 'Not found' });
+        return next();
       }
       res.sendFile(path.join(__dirname, '../client/dist/index.html'));
     });
