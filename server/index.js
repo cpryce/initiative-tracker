@@ -31,6 +31,9 @@ const sessionsRouter = require('./routes/sessions');
 const app = express();
 const PORT = process.env.PORT || 3001;
 
+// Trust the first proxy (required for secure cookies behind HTTPS reverse proxies)
+app.set('trust proxy', 1);
+
 app.use(cors({
   origin: process.env.CLIENT_URL || 'http://localhost:5173',
   credentials: true,
