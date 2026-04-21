@@ -39,13 +39,19 @@ app.use(cors({
 app.use(express.json());
 
 connectDB().then(() => {
+  let store;
+  if (process.env.NODE_ENV === 'production') {
+    console.log('[session] Creating MongoStore with MONGODB_URI:', process.env.MONGODB_URI ? 'set' : 'NOT SET');
+    store = MongoStore.create({ mongoUrl: process.env.MONGODB_URI });
+    console.log('[session] MongoStore created successfully');
+    store.on('error', (err) => console.error('[session] MongoStore error:', err));
+  }
+
   app.use(session({
     secret: process.env.SESSION_SECRET || 'dev_secret_change_me',
     resave: false,
     saveUninitialized: false,
-    store: process.env.NODE_ENV === 'production'
-      ? MongoStore.create({ mongoUrl: process.env.MONGODB_URI })
-      : undefined,
+    store,
     cookie: {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
@@ -53,6 +59,11 @@ connectDB().then(() => {
       maxAge: 24 * 60 * 60 * 1000, // 24 hours
     },
   }));
+
+  app.use((req, _res, next) => {
+    console.log('[session] sessionID:', req.sessionID, '| session:', JSON.stringify(req.session));
+    next();
+  });
 
   app.use(passport.initialize());
   app.use(passport.session());
