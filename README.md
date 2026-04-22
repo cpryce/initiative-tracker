@@ -77,7 +77,6 @@ The compiled assets are output to `client/dist/`. Configure your Express server 
 - Click **Auto-Sort** to order combatants by initiative total (highest first), with ties broken by modifier per D&D 3.5 rules.
 - Drag and drop cards to manually reorder the initiative list.
 - Use **Next Turn** / **Prev** to advance through the initiative order.
-- Toggle the **FF** badge on a combatant to mark them as flat-footed.
 - The round counter increments automatically when all combatants have taken their turn.
 
 ## Contributing
