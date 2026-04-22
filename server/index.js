@@ -44,14 +44,10 @@ app.use(express.json());
 connectDB().then(() => {
   let store;
   if (process.env.NODE_ENV === 'production') {
-    console.log('[session] Creating MongoStore with MONGODB_URI:', process.env.MONGODB_URI ? 'set' : 'NOT SET');
     store = MongoStore.create({ mongoUrl: process.env.MONGODB_URI });
-    console.log('[session] MongoStore created successfully');
-    store.on('error', (err) => console.error('[session] MongoStore error:', err));
-    store.on('set', (sessionId) => console.log('[session] MongoStore saving session:', sessionId));
+    store.on('error', (err) => console.error('MongoStore error:', err));
   }
 
-  console.log('[session] About to apply session middleware');
   app.use(session({
     name: 'connect.sid',
     secret: process.env.SESSION_SECRET || 'dev_secret_change_me',
@@ -64,50 +60,7 @@ connectDB().then(() => {
       sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
       maxAge: 24 * 60 * 60 * 1000, // 24 hours
     },
-    genid: (req) => {
-      const id = require('crypto').randomBytes(16).toString('hex');
-      console.log('[session] Generated new session ID:', id);
-      return id;
-    },
   }));
-  console.log('[session] Session middleware applied');
-
-  console.log('[session] Cookie config:', {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-    maxAge: 24 * 60 * 60 * 1000,
-  });
-
-  console.log('[session] CLIENT_URL:', process.env.CLIENT_URL);
-  console.log('[session] CALLBACK_URL:', process.env.CALLBACK_URL);
-
-  app.use((req, res, next) => {
-    const originalSetHeader = res.setHeader;
-    res.setHeader = function(name, value) {
-      if (name.toLowerCase() === 'set-cookie') {
-        console.log('[session] SETTING COOKIE:', value);
-        console.log('[session] Request origin:', req.get('origin'));
-        console.log('[session] Request host:', req.get('host'));
-      }
-      return originalSetHeader.call(this, name, value);
-    };
-    next();
-  });
-
-  app.use((req, _res, next) => {
-    console.log('[session] sessionID:', req.sessionID, '| session:', JSON.stringify(req.session));
-    next();
-  });
-
-  app.use((req, res, next) => {
-    const originalJson = res.json;
-    res.json = function(data) {
-      console.log('[session] res.json called, session modified:', req.session.passport !== undefined);
-      return originalJson.call(this, data);
-    };
-    next();
-  });
 
   app.use(passport.initialize());
   app.use(passport.session());
