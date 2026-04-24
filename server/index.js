@@ -44,7 +44,7 @@ app.use(express.json());
 connectDB().then(() => {
   let store;
   if (process.env.NODE_ENV === 'production') {
-    store = MongoStore.create({ mongoUrl: process.env.MONGODB_URI });
+    store = MongoStore.create({ mongoUrl: process.env.MONGO_URI });
     store.on('error', (err) => console.error('MongoStore error:', err));
   }
 
